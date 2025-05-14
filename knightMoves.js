@@ -18,12 +18,17 @@ function knightMoves(start, destination) {
   //immediately push in the starting node into the queue (creating a new Node instance)
   queue.push(new Node(start, null));
   //while the current first node.location in the queue is not === destination and while the length of the queue is > 0. Thus this will run until one of these conditions is not true
-  while (
-    // eslint-disable-next-line prettier/prettier
-    queue[0].location[0] !== destination[0] &&
-    queue[0].location[1] !== destination[1] &&
-    queue.length > 0
-  ) {
+  while (queue.length > 0) {
+    let currentNode = queue.shift();
+    if (
+      currentNode.location[0] === destination[0] &&
+      currentNode.location[1] === destination[1]
+    ) {
+      results.push(currentNode);
+      break;
+    }
+    //add this current node as visited, but only the location property value
+    visited.push(JSON.stringify(currentNode.location));
     //create an array which represents the horizontal and vertical additions&subtractions for the next 8 moves
     let nextMoves = [
       [-1, -2],
@@ -39,8 +44,8 @@ function knightMoves(start, destination) {
     //so loop through the nextMoves adding each of their location values to the currentNodes location values
     for (let nextMove of nextMoves) {
       let tempMove = [
-        queue[0].location[0] + nextMove[0],
-        queue[0].location[1] + nextMove[1],
+        currentNode.location[0] + nextMove[0],
+        currentNode.location[1] + nextMove[1],
       ];
       if (
         tempMove[0] < 8 &&
@@ -50,28 +55,20 @@ function knightMoves(start, destination) {
         !visited.includes(`[${tempMove[0]},${tempMove[1]}]`)
       ) {
         //if valid move then add it into queue as a new Node instance with the correct location and tell its parent to be the node this move originated from
-        queue.push(new Node(tempMove, queue[0]));
+        queue.push(new Node(tempMove, currentNode));
       }
     }
-    //add this current node as visited, but only the location property value
-    visited.push(JSON.stringify(queue[0].location));
-    console.log(JSON.stringify(queue[0].location));
-    //shift out node from queue
-    queue.shift();
   }
-  //if the queue has nodes and the first node.location === destination, then we've found the destination node and we need to push this node into the results array
-  if (
-    queue[0].location[0] === destination[0] &&
-    queue[0].location[1] === destination[1]
-  ) {
-    results.push(queue[0]);
 
-    //use a while loop to push in the parent of this node and its parent and its parent etc until there is no parent
+  //if the results array has elements, then the path was found
+  if (results.length > 0) {
+    //use a while loop to push in the parent of this node and its parent and its parent etc until there is no parent node of the node you just pushed, thereby creating an array of moves from the starting to destination position
     let destinationNode = results[0];
     while (destinationNode.parent !== null) {
       destinationNode = destinationNode.parent;
       results.push(destinationNode);
     }
+    //log a statement describing the user how many moves were made to get from starting position to destination position
     console.log(
       `You made it in ${results.length - 1} moves! Here's your path:`
     );
@@ -80,6 +77,8 @@ function knightMoves(start, destination) {
       let temp = results.pop();
       console.log(temp.location);
     }
+  } else {
+    console.log("No path found.");
   }
 }
 
